@@ -13,6 +13,7 @@
     "apiDocs": "API 文件",
     "projectRepository": "專案庫",
     "appSettings": "設定",
+    "deploymentInfo": "部署資訊",
     "logout": "登出",
     "frontendNeedsRebuild": "前端程式碼需重新建置",
     "themeToggle": {
@@ -34,7 +35,7 @@
     "authDisabled": "認證已停用，使用免登入模式",
     "guestMode": "免登入",
     "consentLabel": "同意{{documents}}",
-    "consentDocuments": "《使用者隱私協議》和《模型服務協議》",
+    "consentDocuments": "《隱私政策協議》",
     "errorConsentRequired": "請先閱讀並同意相關協議後再登入"
   },
   "common": {
