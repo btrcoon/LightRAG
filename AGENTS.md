@@ -1,5 +1,12 @@
 # Repository Guidelines
 
+## Agent response and scope discipline
+
+- Apply the `clear-human-writing` skill to user-facing prose. Answer the request directly and remove process narration, throat-clearing, canned validation, repetition, generic advice, and unrequested recaps.
+- Preserve requested details, commands, paths, citations, test counts, warnings, residual risks, machine-readable output, and required schemas. Concision must not remove information the user asked for.
+- Completion reports should normally contain only changed paths, validation performed, and remaining risks. Use headings, lists, tables, and emphasis only when they improve navigation.
+- Before editing more than one file, list the exact paths and intended changes and obtain confirmation. A broad request does not count as confirmation. An explicit request to implement `TODO AI:` stubs across named files is the only exception.
+
 ## Project Overview
 
 LightRAG is a Retrieval-Augmented Generation (RAG) framework that uses graph-based knowledge representation for enhanced information retrieval. The system extracts entities and relationships from documents, builds a knowledge graph, and uses multiple retrieval modes (`local`, `global`, `hybrid`, `mix`, `naive`) for queries.
@@ -44,12 +51,14 @@ The `@final` decorator on `LightRAG` is preserved — the mixin layering is an i
 ### Storage Layer
 
 LightRAG uses 4 storage types with pluggable backends:
+
 - **KV_STORAGE**: LLM response cache, text chunks, document info
 - **VECTOR_STORAGE**: Entity/relation/chunk embeddings
 - **GRAPH_STORAGE**: Entity-relation graph structure
 - **DOC_STATUS_STORAGE**: Document processing status tracking
 
 Each `LightRAG` instance can pass a `workspace` parameter for data isolation. Implementation differs per storage type:
+
 - **File-based**: subdirectories under `working_dir`.
 - **Collection-based**: collection name prefixes.
 - **Relational DB**: workspace column filtering.
@@ -72,7 +81,7 @@ The document ingestion pipeline coordinates concurrent writers through `pipeline
 Mutual-exclusion rules (all checked atomically inside the lock):
 
 | Operation | Refuses if | Writes |
-|---|---|---|
+| --- | --- | --- |
 | `_reserve_enqueue_slot` | `scanning_exclusive` or `destructive_busy` | `pending_enqueues++` |
 | `apipeline_enqueue_documents` (last-line guard) | (`scanning_exclusive` and not `from_scan`) or `destructive_busy` | — |
 | Scan endpoint reservation | `busy or scanning or pending_enqueues > 0` | `scanning = True` |
@@ -94,7 +103,7 @@ The governing invariant is narrower than "every purge needs a proof":
 `_purge_kg_contributions` therefore **fails closed** (`RecoveryAnchorMissingError`, surfaced as HTTP 409, nothing deleted) when it would remove a carrier without one of these proofs. Treating absent anchors as an empty candidate list was issue #3400's silent-skip defect: graph cleanup was skipped while the chunks went anyway, stranding unattributable entities that `audit_kg_integrity` can only report as unrecoverable orphans.
 
 | Proof | Established by |
-|---|---|
+| --- | --- |
 | `anchors` | Both anchor ROWS present and structurally usable. **Row presence is the test, never list truthiness** — an empty row is a document that extracted no entities, and conflating the two is the original bug. |
 | `pre_graph` | `doc_status.metadata.kg_write_state`. Stamped `pre_graph` at enqueue so every pre-merge failure state inherits it by carry-over; advanced to `graph_mutation_started` only by `merge_nodes_and_edges`' `on_anchors_durable` hook. **Monotonic** — nothing writes it back, because re-stamping `pre_graph` on reprocess would let the resume purge skip and orphan the previous run's contributions. Absent means UNKNOWN (pre-#3416), which fails closed. |
 | `journal` | `doc_status.metadata.kg_purge` at a phase past `prepared`, i.e. a previous attempt got far enough to have deleted the anchors itself. |
@@ -158,6 +167,7 @@ The offline remedy for a document with no proof is `audit_kg_integrity(..., appl
 ## Development Commands
 
 ### Setup
+
 ```bash
 # Install with uv
 uv sync
@@ -173,6 +183,7 @@ uv sync --extra test             # Testing dependencies
 ```
 
 ### API Server
+
 ```bash
 # Copy and configure environment
 cp env.example .env  # Edit with your LLM/embedding configs
@@ -190,6 +201,7 @@ lightrag-gunicorn                                         # Multi-worker (gunico
 ```
 
 ### WebUI
+
 ```bash
 cd lightrag_webui
 bun install --frozen-lockfile      # Install dependencies
@@ -244,6 +256,7 @@ bun test src/api/lightrag.test.ts  # Single test file
 - Integration env vars: `LIGHTRAG_RUN_INTEGRATION=true`, `LIGHTRAG_KEEP_ARTIFACTS=true`, `LIGHTRAG_TEST_WORKERS=4`, plus storage-specific connection strings.
 
 ### Linting
+
 ```bash
 ruff check .
 ```
@@ -366,7 +379,9 @@ For WebUI bugs whose symptoms only surface in the rendered DOM — layout/overfl
 ## Configuration
 
 ### .env Configuration
+
 Primary configuration file for API server. Generate it with `make env-base` or copy `env.example` manually. Key sections:
+
 - Server settings (HOST, PORT, CORS)
 - Storage backends (connection strings via environment variables)
 - Query parameters (TOP_K, MAX_TOTAL_TOKENS, etc.)
@@ -376,6 +391,7 @@ Primary configuration file for API server. Generate it with `make env-base` or c
 See `env.example` for comprehensive template.
 
 ### Setup Wizard Outputs
+
 - Keep `.env` host-usable. Container-only hostnames and staged SSL paths belong in the wizard-managed compose layer, not persisted back into `.env`.
 - Treat `docker-compose.final.yml` as generated output assembled from `scripts/setup/templates/*.yml`.
 - For setup workflow changes, prefer `make env-*` targets over direct `scripts/setup/setup.sh` calls.
@@ -383,9 +399,11 @@ See `env.example` for comprehensive template.
 ## Code Style
 
 ### Language
+
 Comments, backend code, log messages, and Git commit messages in English. Frontend uses i18next for multi-language support.
 
 ### Python
+
 - Follow PEP 8 with 4-space indentation
 - Use type annotations
 - Prefer dataclasses for state management
@@ -393,6 +411,7 @@ Comments, backend code, log messages, and Git commit messages in English. Fronte
 - Async/await patterns throughout
 
 ### TypeScript / React (incl. WebUI ESLint)
+
 - Functional components with hooks; PascalCase for components
 - 2-space indentation, single quotes (enforced by `@stylistic` rules)
 - Tailwind utility-first styling
