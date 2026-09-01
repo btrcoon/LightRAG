@@ -89,6 +89,9 @@ memory-bank
 !.claude/settings.json
 !.claude/hooks/
 
+# Ignore AI plans
+plans/
+
 # Google Jules
 .jules/
 

@@ -1,0 +1,5 @@
+{
+  "name": "lightrag-answer-editor",
+  "description": "Shared concise-writing skill, editor agent, and first-pass guidance for LightRAG.",
+  "version": "0.1.0"
+}

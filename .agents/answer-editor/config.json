@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "wordLimit": 500,
+  "delegationTimeoutMs": 120000,
+  "bridgeProbeTimeoutMs": 1500,
+  "firstPassGuidance": true,
+  "piAutomaticRewrite": true
+}
